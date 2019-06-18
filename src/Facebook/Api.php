@@ -83,11 +83,12 @@ class Api
      * @return bool
      * @throws \Exception
      */
-    public static function sendPhoto($photo ,$message = ''){
+    public static function sendPhoto($photo, $message = '', $published=true){
         self::initialize();
         $data = [
             'message' => $message,
-            'source' => self::$fb->fileToUpload($photo)
+            'source' => self::$fb->fileToUpload($photo),
+            "published" => $published
         ];
         try {
             $response = self::$fb->post('/me/photos', $data, self::$page_access_token);
@@ -96,6 +97,40 @@ class Api
         } catch(Facebook\Exceptions\FacebookSDKException $e) {
             throw new \Exception('Facebook SDK returned an error: '.$e->getMessage());
         }
+        $graphNode = $response->getGraphNode();
+
+        return $graphNode['id'];
+    }
+    
+    public function sendPhotos($photos, $messages='')
+    {
+         self::initialize();
+        
+        $photo_ids = [];
+        $params = array( "message" => $message );
+        
+        foreach($photos as $key => $photo) {
+            $tmp_message = '';
+            
+            if(is_array($messages) && isset($messages[$key])){
+                $tmp_message = $messages[$key];
+            }
+            
+            $photo_ids[] = self::sendPhoto($photo, $tmp_message, false);
+        }
+        
+        foreach($photo_ids as $k => $photo_id) {
+            $params["attached_media"][$k] = '{"media_fbid":"' . $photo_id . '"}';
+        }
+        
+        try {
+            $postResponse = $this->fb->post("/me/feed", $params, self::$page_access_token);
+        } catch (Facebook\Exceptions\FacebookResponseException $e) {
+            throw new \Exception('Graph returned an error: '.$e->getMessage());
+        } catch (Facebook\Exceptions\FacebookSDKException $e) {
+           throw new \Exception('Facebook SDK returned an error: '.$e->getMessage());
+        }
+
         $graphNode = $response->getGraphNode();
 
         return $graphNode['id'];

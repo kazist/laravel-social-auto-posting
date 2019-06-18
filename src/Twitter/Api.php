@@ -13,7 +13,7 @@
 
 namespace Toolkito\Larasap\Twitter;
 
-require_once __DIR__. '/OAuth.php';
+require_once __DIR__ . '/OAuth.php';
 use Illuminate\Support\Facades\Config;
 
 /**
@@ -24,7 +24,7 @@ class Api
     const API_URL = 'https://api.twitter.com/1.1/';
 
     /** @var array */
-    public static $httpOptions = [
+    public $httpOptions = [
         CURLOPT_TIMEOUT => 20,
         CURLOPT_SSL_VERIFYPEER => 0,
         CURLOPT_HTTPHEADER => ['Expect:'],
@@ -32,33 +32,32 @@ class Api
     ];
 
     /** @var Twitter_OAuthConsumer */
-    private static $consumer;
+    public $consumer;
 
     /** @var Twitter_OAuthConsumer */
-    private static $token;
+    public $token;
 
-
-    private static $consumerKey;
-    private static $consumerSecret;
-    private static $accessToken = null;
-    private static $accessTokenSecret = null;
+    public $consumerKey;
+    public $consumerSecret;
+    public $accessToken = null;
+    public $accessTokenSecret = null;
 
     /**
      * Initialize
      */
-    public static function initialize()
+    public function __construct($consumerKey = '', $consumerSecret = '', $accessToken = '', $accessTokenSecret = '')
     {
         if (!extension_loaded('curl')) {
             throw new TwitterException('PHP extension CURL is not loaded.');
         }
 
-        self::$consumerKey = Config::get('larasap.twitter.consurmer_key');
-        self::$consumerSecret = Config::get('larasap.twitter.consurmer_secret');;
-        self::$accessToken = Config::get('larasap.twitter.access_token');;
-        self::$accessTokenSecret = Config::get('larasap.twitter.access_token_secret');
+        $this->consumerKey = ($consumerKey !== '') ? $consumerKey : Config::get('larasap.twitter.consurmer_key');
+        $this->consumerSecret = ($consumerSecret !== '') ? $consumerSecret : Config::get('larasap.twitter.consurmer_secret');
+        $this->accessToken = ($accessToken !== '') ? $accessToken : Config::get('larasap.twitter.access_token');
+        $this->accessTokenSecret = ($accessTokenSecret !== '') ? $accessTokenSecret : Config::get('larasap.twitter.access_token_secret');
 
-        self::$consumer = new Twitter_OAuthConsumer(self::$consumerKey, self::$consumerSecret);
-        self::$token = new Twitter_OAuthConsumer(self::$accessToken, self::$accessTokenSecret);
+        $this->consumer = new Twitter_OAuthConsumer($this->consumerKey, $this->consumerSecret);
+        $this->token = new Twitter_OAuthConsumer($this->accessToken, $this->accessTokenSecret);
     }
 
     /**
@@ -69,13 +68,12 @@ class Api
      * @return stdClass  see https://dev.twitter.com/rest/reference/post/statuses/update
      * @throws TwitterException
      */
-    public static function sendMessage($message, $media = [], $options = [])
+    public function sendMessage($message, $media = [], $options = [])
     {
-        self::initialize();
 
         $mediaIds = [];
         foreach ($media as $item) {
-            $res = self::request(
+            $res = $this->request(
                 'https://upload.twitter.com/1.1/media/upload.json',
                 'POST',
                 null,
@@ -83,7 +81,7 @@ class Api
             );
             $mediaIds[] = $res->media_id_string;
         }
-        return self::request(
+        return $this->request(
             'statuses/update',
             'POST',
             $options + ['status' => $message, 'media_ids' => implode(',', $mediaIds) ?: null]
@@ -99,13 +97,13 @@ class Api
      * @return stdClass|stdClass[]
      * @throws TwitterException
      */
-    public static function request($resource, $method, array $data = null, array $files = null)
+    public function request($resource, $method, array $data = null, array $files = null)
     {
         if (!strpos($resource, '://')) {
             if (!strpos($resource, '.')) {
                 $resource .= '.json';
             }
-            $resource = self::API_URL . $resource;
+            $resource = $this->API_URL . $resource;
         }
 
         $hasCURLFile = class_exists('CURLFile', false) && defined('CURLOPT_SAFE_UPLOAD');
@@ -125,19 +123,19 @@ class Api
             $data[$key] = $hasCURLFile ? new \CURLFile($file) : '@' . $file;
         }
 
-        $request = Twitter_OAuthRequest::from_consumer_and_token(self::$consumer, self::$token, $method, $resource, $files ? [] : $data);
-        $request->sign_request(new Twitter_OAuthSignatureMethod_HMAC_SHA1, self::$consumer, self::$token);
+        $request = Twitter_OAuthRequest::from_consumer_and_token($this->consumer, $this->token, $method, $resource, $files ? [] : $data);
+        $request->sign_request(new Twitter_OAuthSignatureMethod_HMAC_SHA1, $this->consumer, $this->token);
 
         $options = [
-                CURLOPT_HEADER => false,
-                CURLOPT_RETURNTRANSFER => true,
-            ] + ($method === 'POST' ? [
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => $files ? $data : $request->to_postdata(),
-                CURLOPT_URL => $files ? $request->to_url() : $request->get_normalized_http_url(),
-            ] : [
-                CURLOPT_URL => $request->to_url(),
-            ]) + self::$httpOptions;
+            CURLOPT_HEADER => false,
+            CURLOPT_RETURNTRANSFER => true,
+        ] + ($method === 'POST' ? [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $files ? $data : $request->to_postdata(),
+            CURLOPT_URL => $files ? $request->to_url() : $request->get_normalized_http_url(),
+        ] : [
+            CURLOPT_URL => $request->to_url(),
+        ]) + $this->httpOptions;
 
         if ($method === 'POST' && $hasCURLFile) {
             $options[CURLOPT_SAFE_UPLOAD] = true;
@@ -151,8 +149,8 @@ class Api
         }
 
         $payload = defined('JSON_BIGINT_AS_STRING')
-            ? @json_decode($result, false, 128, JSON_BIGINT_AS_STRING)
-            : @json_decode($result); // intentionally @
+        ? @json_decode($result, false, 128, JSON_BIGINT_AS_STRING)
+        : @json_decode($result); // intentionally @
 
         if ($payload === false) {
             throw new TwitterException('Invalid server response');
@@ -170,7 +168,6 @@ class Api
         return $payload;
     }
 }
-
 
 /**
  * An exception generated by Twitter.

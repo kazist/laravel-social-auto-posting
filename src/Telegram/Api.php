@@ -15,7 +15,6 @@ namespace Toolkito\Larasap\Telegram;
 
 use Illuminate\Support\Facades\Config;
 
-
 class Api
 {
     /**
@@ -33,45 +32,45 @@ class Api
      *
      * @var string
      */
-    private static $api_url = 'https://api.telegram.org/bot';
+    public $api_url = 'https://api.telegram.org/bot';
 
     /**
      * Telegram bot api token
      *
      * @var string
      */
-    private static $api_token;
+    public $api_token;
 
     /**
      * Telegram bot username
      *
      * @var string
      */
-    private static $bot_username;
+    public $bot_username;
 
     /**
      * Telegram Channel username to send messages
      *
      * @var string
      */
-    private static $channel_username;
+    public $channel_username;
 
     /**
      * Proxy Status => On | Off
      *
      * @var string
      */
-    private static $proxy;
+    public $proxy;
 
     /**
      * Initialize
      */
-    public static function initialize()
+    public function __construct($api_token = '', $bot_username = '', $channel_username = '', $proxy = '')
     {
-        self::$api_token = Config::get('larasap.telegram.api_token');
-        self::$bot_username = Config::get('larasap.telegram.bot_username');
-        self::$channel_username = Config::get('larasap.telegram.channel_username');
-        self::$proxy = !! Config::get('larasap.telegram.proxy');
+        $this->api_token = ($api_token !== '') ? $api_token : Config::get('larasap.telegram.api_token');
+        $this->bot_username = ($bot_username !== '') ? $bot_username : Config::get('larasap.telegram.bot_username');
+        $this->channel_username = ($channel_username !== '') ? $channel_username : Config::get('larasap.telegram.channel_username');
+        $this->proxy = !! ($proxy !== '') ? $proxy : Config::get('larasap.telegram.proxy');
     }
 
     /**
@@ -86,19 +85,19 @@ class Api
      * @param bool $display_web_page_preview
      * @return bool|mixed
      */
-    public static function sendMessage($chat_id = null, $text, $inline_keyboard = '', $reply_keyboard = '', $parse_mode = 'HTML', $disable_web_page_preview = false, $disable_notification = false, $reply_to_message_id = '')
+    public function sendMessage($chat_id = null, $text, $inline_keyboard = '', $reply_keyboard = '', $parse_mode = 'HTML', $disable_web_page_preview = false, $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','text', 'parse_mode', 'disable_web_page_preview', 'disable_notification', 'reply_to_message_id');
-        if($inline_keyboard) {
-            $params['reply_markup'] = self::inlineKeyboard($inline_keyboard);
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'text', 'parse_mode', 'disable_web_page_preview', 'disable_notification', 'reply_to_message_id');
+        if ($inline_keyboard) {
+            $params['reply_markup'] = $this->inlineKeyboard($inline_keyboard);
         }
-        if($reply_keyboard) {
-            $params['reply_markup'] = self::replyKeyboard($reply_keyboard);
+        if ($reply_keyboard) {
+            $params['reply_markup'] = $this->replyKeyboard($reply_keyboard);
         }
-        $result = self::sendRequest('sendMessage', $params);
-        return $result? $result : false;
+        $result = $this->sendRequest('sendMessage', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -112,19 +111,19 @@ class Api
      * @param string $reply_keyboard
      * @return bool|mixed
      */
-    public static function sendPhoto($chat_id = null, $photo, $caption = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
+    public function sendPhoto($chat_id = null, $photo, $caption = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','photo', 'caption', 'disable_notification', 'reply_to_message_id');
-        if($inline_keyboard) {
-            $params['reply_markup'] = self::inlineKeyboard($inline_keyboard);
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'photo', 'caption', 'disable_notification', 'reply_to_message_id');
+        if ($inline_keyboard) {
+            $params['reply_markup'] = $this->inlineKeyboard($inline_keyboard);
         }
-        if($reply_keyboard) {
-            $params['reply_markup'] = self::replyKeyboard($reply_keyboard);
+        if ($reply_keyboard) {
+            $params['reply_markup'] = $this->replyKeyboard($reply_keyboard);
         }
-        $result = self::sendRequest('sendPhoto', $params);
-        return $result? $result : false;
+        $result = $this->sendRequest('sendPhoto', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -142,20 +141,20 @@ class Api
      * @param string $reply_keyboard
      * @return bool|mixed
      */
-    public static function sendAudio($chat_id = null, $audio, $caption = '', $duration = '', $performer = '', $title = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
+    public function sendAudio($chat_id = null, $audio, $caption = '', $duration = '', $performer = '', $title = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','audio', 'caption', 'duration', 'performer', 'title', 'disable_notification', 'reply_to_message_id');
-        if($inline_keyboard) {
-            $params['reply_markup'] = self::inlineKeyboard($inline_keyboard);
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'audio', 'caption', 'duration', 'performer', 'title', 'disable_notification', 'reply_to_message_id');
+        if ($inline_keyboard) {
+            $params['reply_markup'] = $this->inlineKeyboard($inline_keyboard);
         }
-        if($reply_keyboard) {
-            $params['reply_markup'] = self::replyKeyboard($reply_keyboard);
+        if ($reply_keyboard) {
+            $params['reply_markup'] = $this->replyKeyboard($reply_keyboard);
         }
 
-        $result = self::sendRequest('sendAudio', $params);
-        return $result? $result : false;
+        $result = $this->sendRequest('sendAudio', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -170,19 +169,19 @@ class Api
      * @param string $reply_keyboard
      * @return bool|mixed
      */
-    public static function sendDocument($chat_id = null, $document, $caption = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
+    public function sendDocument($chat_id = null, $document, $caption = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','document', 'caption', 'disable_notification', 'reply_to_message_id');
-        if($inline_keyboard) {
-            $params['reply_markup'] = self::inlineKeyboard($inline_keyboard);
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'document', 'caption', 'disable_notification', 'reply_to_message_id');
+        if ($inline_keyboard) {
+            $params['reply_markup'] = $this->inlineKeyboard($inline_keyboard);
         }
-        if($reply_keyboard) {
-            $params['reply_markup'] = self::replyKeyboard($reply_keyboard);
+        if ($reply_keyboard) {
+            $params['reply_markup'] = $this->replyKeyboard($reply_keyboard);
         }
-        $result = self::sendRequest('sendDocument', $params);
-        return $result? $result : false;
+        $result = $this->sendRequest('sendDocument', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -200,19 +199,19 @@ class Api
      * @param string $reply_keyboard
      * @return bool|mixed
      */
-    public static function sendVideo($chat_id = null, $video, $duration = '', $width = '', $height = '', $caption = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
+    public function sendVideo($chat_id = null, $video, $duration = '', $width = '', $height = '', $caption = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','video', 'duration','width', 'height', 'caption', 'disable_notification', 'reply_to_message_id');
-        if($inline_keyboard) {
-            $params['reply_markup'] = self::inlineKeyboard($inline_keyboard);
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'video', 'duration', 'width', 'height', 'caption', 'disable_notification', 'reply_to_message_id');
+        if ($inline_keyboard) {
+            $params['reply_markup'] = $this->inlineKeyboard($inline_keyboard);
         }
-        if($reply_keyboard) {
-            $params['reply_markup'] = self::replyKeyboard($reply_keyboard);
+        if ($reply_keyboard) {
+            $params['reply_markup'] = $this->replyKeyboard($reply_keyboard);
         }
-        $result = self::sendRequest('sendVideo', $params);
-        return $result? $result : false;
+        $result = $this->sendRequest('sendVideo', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -228,19 +227,19 @@ class Api
      * @param string $reply_keyboard
      * @return bool|mixed
      */
-    public static function sendVoice($chat_id = null, $voice, $caption = '', $duration = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
+    public function sendVoice($chat_id = null, $voice, $caption = '', $duration = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','voice', 'caption', 'duration', 'disable_notification', 'reply_to_message_id');
-        if($inline_keyboard) {
-            $params['reply_markup'] = self::inlineKeyboard($inline_keyboard);
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'voice', 'caption', 'duration', 'disable_notification', 'reply_to_message_id');
+        if ($inline_keyboard) {
+            $params['reply_markup'] = $this->inlineKeyboard($inline_keyboard);
         }
-        if($reply_keyboard) {
-            $params['reply_markup'] = self::replyKeyboard($reply_keyboard);
+        if ($reply_keyboard) {
+            $params['reply_markup'] = $this->replyKeyboard($reply_keyboard);
         }
-        $result = self::sendRequest('sendVoice', $params);
-        return $result? $result : false;
+        $result = $this->sendRequest('sendVoice', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -252,13 +251,13 @@ class Api
      * @param string $reply_to_message_id
      * @return bool|mixed
      */
-    public static function sendMediaGroup($chat_id = null, $media, $disable_notification = false, $reply_to_message_id = '')
+    public function sendMediaGroup($chat_id = null, $media, $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','media', 'disable_notification', 'reply_to_message_id');
-        $result = self::sendRequest('sendMediaGroup', $params);
-        return $result? $result : false;
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'media', 'disable_notification', 'reply_to_message_id');
+        $result = $this->sendRequest('sendMediaGroup', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -274,19 +273,19 @@ class Api
      * @param string $reply_keyboard
      * @return bool|mixed
      */
-    public static function sendLocation($chat_id = null, $latitude, $longitude, $live_period = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
+    public function sendLocation($chat_id = null, $latitude, $longitude, $live_period = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','latitude', 'longitude', 'live_period', 'disable_notification', 'reply_to_message_id');
-        if($inline_keyboard) {
-            $params['reply_markup'] = self::inlineKeyboard($inline_keyboard);
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'latitude', 'longitude', 'live_period', 'disable_notification', 'reply_to_message_id');
+        if ($inline_keyboard) {
+            $params['reply_markup'] = $this->inlineKeyboard($inline_keyboard);
         }
-        if($reply_keyboard) {
-            $params['reply_markup'] = self::replyKeyboard($reply_keyboard);
+        if ($reply_keyboard) {
+            $params['reply_markup'] = $this->replyKeyboard($reply_keyboard);
         }
-        $result = self::sendRequest('sendLocation', $params);
-        return $result? $result : false;
+        $result = $this->sendRequest('sendLocation', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -304,19 +303,19 @@ class Api
      * @param string $reply_keyboard
      * @return bool|mixed
      */
-    public static function sendVenue($chat_id = null, $latitude, $longitude, $title, $address, $foursquare_id = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
+    public function sendVenue($chat_id = null, $latitude, $longitude, $title, $address, $foursquare_id = '', $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','latitude', 'longitude', 'title', 'address', 'foursquare_id', 'disable_notification', 'reply_to_message_id');
-        if($inline_keyboard) {
-            $params['reply_markup'] = self::inlineKeyboard($inline_keyboard);
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'latitude', 'longitude', 'title', 'address', 'foursquare_id', 'disable_notification', 'reply_to_message_id');
+        if ($inline_keyboard) {
+            $params['reply_markup'] = $this->inlineKeyboard($inline_keyboard);
         }
-        if($reply_keyboard) {
-            $params['reply_markup'] = self::replyKeyboard($reply_keyboard);
+        if ($reply_keyboard) {
+            $params['reply_markup'] = $this->replyKeyboard($reply_keyboard);
         }
-        $result = self::sendRequest('sendVenue', $params);
-        return $result? $result : false;
+        $result = $this->sendRequest('sendVenue', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -332,19 +331,19 @@ class Api
      * @param string $reply_keyboard
      * @return bool|mixed
      */
-    public static function sendContact($chat_id = null, $phone_number, $first_name, $last_name, $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
+    public function sendContact($chat_id = null, $phone_number, $first_name, $last_name, $inline_keyboard = '', $reply_keyboard = '', $disable_notification = false, $reply_to_message_id = '')
     {
-        self::initialize();
-        $chat_id = $chat_id ? $chat_id : self::$channel_username;
-        $params = compact('chat_id','phone_number', 'first_name', 'last_name', 'disable_notification', 'reply_to_message_id');
-        if($inline_keyboard) {
-            $params['reply_markup'] = self::inlineKeyboard($inline_keyboard);
+
+        $chat_id = $chat_id ? $chat_id : $this->channel_username;
+        $params = compact('chat_id', 'phone_number', 'first_name', 'last_name', 'disable_notification', 'reply_to_message_id');
+        if ($inline_keyboard) {
+            $params['reply_markup'] = $this->inlineKeyboard($inline_keyboard);
         }
-        if($reply_keyboard) {
-            $params['reply_markup'] = self::replyKeyboard($reply_keyboard);
+        if ($reply_keyboard) {
+            $params['reply_markup'] = $this->replyKeyboard($reply_keyboard);
         }
-        $result = self::sendRequest('sendContact', $params);
-        return $result? $result : false;
+        $result = $this->sendRequest('sendContact', $params);
+        return $result ? $result : false;
     }
 
     /**
@@ -353,7 +352,7 @@ class Api
      * @param $buttons
      * @return string
      */
-    public static function inlineKeyboard($buttons)
+    public function inlineKeyboard($buttons)
     {
         $inline_keyboard = ['inline_keyboard' => $buttons];
         return json_encode($inline_keyboard);
@@ -365,7 +364,7 @@ class Api
      * @param $buttons
      * @return string
      */
-    public static function replyKeyboard($buttons)
+    public function replyKeyboard($buttons)
     {
         $inline_keyboard = ['keyboard' => $buttons];
         return json_encode($inline_keyboard);
@@ -376,15 +375,15 @@ class Api
      *
      * @return array
      */
-    public static function setProxy()
+    public function setProxy()
     {
         return [
-            CURLOPT_PROXY => Config::get('larasap.proxy.hostname' , '127.0.0.1'),
-            CURLOPT_PROXYPORT => Config::get('larasap.proxy.port' , '9050'),
-            CURLOPT_PROXYTYPE => Config::get('larasap.proxy.type' , CURLPROXY_SOCKS5_HOSTNAME),
-            CURLOPT_PROXYUSERPWD => Config::get('larasap.proxy.username').':'.Config::get('larasap.proxy.password'),
+            CURLOPT_PROXY => Config::get('larasap.proxy.hostname', '127.0.0.1'),
+            CURLOPT_PROXYPORT => Config::get('larasap.proxy.port', '9050'),
+            CURLOPT_PROXYTYPE => Config::get('larasap.proxy.type', CURLPROXY_SOCKS5_HOSTNAME),
+            CURLOPT_PROXYUSERPWD => Config::get('larasap.proxy.username') . ':' . Config::get('larasap.proxy.password'),
         ];
-        
+
     }
 
     /**
@@ -395,17 +394,17 @@ class Api
      * @return mixed
      * @throws \Exception
      */
-    public static function sendRequest($method = 'sendMessage', $params)
+    public function sendRequest($method = 'sendMessage', $params)
     {
-        $curl = curl_init(self::$api_url . self::$api_token . '/'. $method);
+        $curl = curl_init($this->api_url . $this->api_token . '/' . $method);
         curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params));
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 
-        if(self::$proxy) {
-            curl_setopt_array($curl, self::setProxy());
+        if ($this->proxy) {
+            curl_setopt_array($curl, $this->setProxy());
         }
 
         $curl_result = curl_exec($curl);

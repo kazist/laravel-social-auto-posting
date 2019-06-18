@@ -162,6 +162,8 @@ class SendTo
      */
     public function assignSignature($text, $type)
     {
+        $telegram_api = new TelegramApi($this->config['api_token'], $this->config['bot_username'], $this->config['channel_username'], $this->config['proxy']);
+
         $signature = "\n" . Config::get('larasap.telegram.channel_signature');
         $signature_length = strlen($signature);
         $text_length = strlen($text);

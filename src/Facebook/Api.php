@@ -102,29 +102,30 @@ class Api
         return $graphNode['id'];
     }
     
-    public function sendPhotos($photos, $messages='')
+    public function sendPhotos($photos, $message = '', $photo_messages= array())
     {
          self::initialize();
         
         $photo_ids = [];
-        $params = array( "message" => $message );
+        $data = array( "message" => $message );
         
         foreach($photos as $key => $photo) {
+            
             $tmp_message = '';
             
-            if(is_array($messages) && isset($messages[$key])){
-                $tmp_message = $messages[$key];
+            if(is_array($photo_messages) && isset($photo_messages[$key])){
+                $tmp_message = $photo_messages[$key];
             }
             
             $photo_ids[] = self::sendPhoto($photo, $tmp_message, false);
         }
         
         foreach($photo_ids as $k => $photo_id) {
-            $params["attached_media"][$k] = '{"media_fbid":"' . $photo_id . '"}';
+            $data["attached_media"][$k] = '{"media_fbid":"' . $photo_id . '"}';
         }
         
         try {
-            $postResponse = $this->fb->post("/me/feed", $params, self::$page_access_token);
+            $response = $this->fb->post("/me/feed", $data, self::$page_access_token);
         } catch (Facebook\Exceptions\FacebookResponseException $e) {
             throw new \Exception('Graph returned an error: '.$e->getMessage());
         } catch (Facebook\Exceptions\FacebookSDKException $e) {

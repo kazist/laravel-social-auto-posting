@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Config;
  */
 class Api
 {
-    const API_URL = 'https://api.twitter.com/1.1/';
+    public $API_URL = 'https://api.twitter.com/1.1/';
 
     /** @var array */
     public $httpOptions = [

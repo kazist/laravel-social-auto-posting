@@ -20,12 +20,12 @@ class Api
     /**
      * Text length of the message to be sent, 1-4096 characters
      */
-    public const TEXT_LENGTH = 4096;
+    public $TEXT_LENGTH = 4096;
 
     /**
      * Caption length for the audio, document, photo, video or voice, 0-200 characters
      */
-    public const CAPTION_LENGTH = 200;
+    public $CAPTION_LENGTH = 200;
 
     /**
      * Telegram bot api url
@@ -396,6 +396,7 @@ class Api
      */
     public function sendRequest($method = 'sendMessage', $params)
     {
+
         $curl = curl_init($this->api_url . $this->api_token . '/' . $method);
         curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
